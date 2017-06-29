@@ -1,5 +1,16 @@
 # Reproducible Research: Peer Assessment 1
 
+Data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up.
+This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+
+The variables included in this dataset are:
+* steps: Number of steps taking in a 5-minute interval (missing values are coded as NA)
+* date: The date on which the measurement was taken in YYYY-MM-DD format
+* interval: Identifier for the 5-minute interval in which measurement was taken
+
+The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
+
 
 ## Loading and preprocessing the data
 
@@ -8,10 +19,6 @@
 
 
 ```r
-#rm(list= ls())
-
-#setwd("C:/WorkingR/Course5Week2")
-
 fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 # 
 # https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
@@ -57,21 +64,11 @@ ccActivity <- activity[(complete.cases(activity)),]
 totalStepByDate <- aggregate(ccActivity$steps, list(date=ccActivity$date), sum)
 names(totalStepByDate)[2] <- "totalSteps"   # rename column "x" to "totalSteps"
 
+# For histogram count, replicate a row of date for each step
 ccActivityDtRep <- as.data.frame(rep(totalStepByDate$date,totalStepByDate$totalSteps))
 
-class(ccActivityDtRep)
-```
+# class(ccActivityDtRep)
 
-```
-## [1] "data.frame"
-```
-
-```r
-#ccActivityDtRepDF <- as.data.frame(ccActivityDtRep)
-
-# class(ccActivityDtRepDF)
-# 
-# class(ccActivityDtRepDF[,1])
 names(ccActivityDtRep)
 ```
 
@@ -91,7 +88,9 @@ library(ggplot2)
 
 ```r
 # 'date' must be date type for ggplot to label x-axis correctly
-ggplot(ccActivityDtRep, aes(x=date)) + geom_histogram(stat = "count")
+ggplot(ccActivityDtRep, aes(x=date)) + 
+      geom_histogram(stat = "count") +
+      ggtitle("Activity Steps from Oct. and Nov. 2012")
 ```
 
 ```
@@ -105,64 +104,11 @@ ggplot(ccActivityDtRep, aes(x=date)) + geom_histogram(stat = "count")
 ```r
 MeanStepByDate <- aggregate(ccActivity$steps, list(date=ccActivity$date), mean)
 names(MeanStepByDate) [2] <- c("AvgSteps")
-MeanStepByDate
+mean(MeanStepByDate$AvgSteps)
 ```
 
 ```
-##          date   AvgSteps
-## 1  2012-10-02  0.4375000
-## 2  2012-10-03 39.4166667
-## 3  2012-10-04 42.0694444
-## 4  2012-10-05 46.1597222
-## 5  2012-10-06 53.5416667
-## 6  2012-10-07 38.2465278
-## 7  2012-10-09 44.4826389
-## 8  2012-10-10 34.3750000
-## 9  2012-10-11 35.7777778
-## 10 2012-10-12 60.3541667
-## 11 2012-10-13 43.1458333
-## 12 2012-10-14 52.4236111
-## 13 2012-10-15 35.2048611
-## 14 2012-10-16 52.3750000
-## 15 2012-10-17 46.7083333
-## 16 2012-10-18 34.9166667
-## 17 2012-10-19 41.0729167
-## 18 2012-10-20 36.0937500
-## 19 2012-10-21 30.6284722
-## 20 2012-10-22 46.7361111
-## 21 2012-10-23 30.9652778
-## 22 2012-10-24 29.0104167
-## 23 2012-10-25  8.6527778
-## 24 2012-10-26 23.5347222
-## 25 2012-10-27 35.1354167
-## 26 2012-10-28 39.7847222
-## 27 2012-10-29 17.4236111
-## 28 2012-10-30 34.0937500
-## 29 2012-10-31 53.5208333
-## 30 2012-11-02 36.8055556
-## 31 2012-11-03 36.7048611
-## 32 2012-11-05 36.2465278
-## 33 2012-11-06 28.9375000
-## 34 2012-11-07 44.7326389
-## 35 2012-11-08 11.1770833
-## 36 2012-11-11 43.7777778
-## 37 2012-11-12 37.3784722
-## 38 2012-11-13 25.4722222
-## 39 2012-11-15  0.1423611
-## 40 2012-11-16 18.8923611
-## 41 2012-11-17 49.7881944
-## 42 2012-11-18 52.4652778
-## 43 2012-11-19 30.6979167
-## 44 2012-11-20 15.5277778
-## 45 2012-11-21 44.3993056
-## 46 2012-11-22 70.9270833
-## 47 2012-11-23 73.5902778
-## 48 2012-11-24 50.2708333
-## 49 2012-11-25 41.0902778
-## 50 2012-11-26 38.7569444
-## 51 2012-11-27 47.3819444
-## 52 2012-11-28 35.3576389
-## 53 2012-11-29 24.4687500
+## [1] 37.3826
 ```
 
 ## What is the average daily activity pattern?
@@ -170,11 +116,12 @@ MeanStepByDate
 across all days (y-axis)
 
 ```r
-ccActivityInterval <- activity[(complete.cases(activity)), c(1,3)]  # exclude 2nd column 'date' 
+ccActivityInterval <- activity[(complete.cases(activity)), c(1,3)]  # exclude 2nd column 'date' and NAs
+
 avgDaily5MinInterval <- aggregate(ccActivityInterval$steps, list(interval=ccActivityInterval$interval), mean)
 names(avgDaily5MinInterval)[2] <- "intervalAvgSteps"   # rename column "x" to 
 
-plot(avgDaily5MinInterval$intervalAvgSteps ~ avgDaily5MinInterval$interval, type="l", main ="Average # of Steps/ 5-minute interval 10/02/12 to 11/29/12", xlab = "Interval", ylab = "Avg # of Steps")
+plot(avgDaily5MinInterval$intervalAvgSteps ~ avgDaily5MinInterval$interval, type="l", main ="Average # of Steps/ 5-minute interval Oct. to Nov. 2012", xlab = "Interval", ylab = "Avg # of Steps")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
@@ -209,14 +156,18 @@ sum(NAcases)
 
 
 ```r
+# Using the mean for that 5-minute interval
 MeanStepByInterval <- aggregate(ccActivity$steps, list(interval=ccActivity$interval), mean)
-activityImputed <- merge(activity, MeanStepByInterval, all.x = TRUE )   ## like left join
 ```
 
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
 
 ```r
+# New dataset - join by common column name "interval"
+activityImputed <- merge(activity, MeanStepByInterval, all.x = TRUE )   ## like left join
+
+# New column: imputedSteps - fill in with avg value (column name "x") if original interval "steps" value was NA.
 activityImputed <- dplyr::mutate(activityImputed, imputedSteps = ifelse(is.na(steps), x, steps))
 ```
 
@@ -263,7 +214,7 @@ MeanStepsCompare <- rbind(MeanStepByDate, MeanImputedStepByDate )
 ggplot(MeanStepsCompare, aes(x=date, y=AvgSteps)) +
       geom_line() +
       facet_wrap(~source, nrow=2) +
-      ggtitle("Compare Avg Steps by Date")
+      ggtitle("Compare imputed interval Avg Steps by Date - Oct. to Nov. 2012")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
@@ -280,7 +231,7 @@ For this part the weekdays() function may be of some help here. Use the dataset 
 activityImputed$weekCategory <- factor(ifelse(weekdays(activityImputed$date) %in% c("Saturday", "Sunday"), c("weekend"),c("weekday")))
 ```
 
-2. Make a panel plot containing a time series plot (i.e. type="1") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+2. Make a panel plot containing a time series plot (i.e. type="1") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
 
 ```r
