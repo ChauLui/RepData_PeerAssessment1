@@ -64,20 +64,6 @@ ccActivity <- activity[(complete.cases(activity)),]
 totalStepByDate <- aggregate(ccActivity$steps, list(date=ccActivity$date), sum)
 names(totalStepByDate)[2] <- "totalSteps"   # rename column "x" to "totalSteps"
 
-# For histogram count, replicate a row of date for each step
-ccActivityDtRep <- as.data.frame(rep(totalStepByDate$date,totalStepByDate$totalSteps))
-
-# class(ccActivityDtRep)
-
-names(ccActivityDtRep)
-```
-
-```
-## [1] "rep(totalStepByDate$date, totalStepByDate$totalSteps)"
-```
-
-```r
-names(ccActivityDtRep) <- "date"
 
 library(ggplot2)
 ```
@@ -87,28 +73,29 @@ library(ggplot2)
 ```
 
 ```r
-# 'date' must be date type for ggplot to label x-axis correctly
-ggplot(ccActivityDtRep, aes(x=date)) + 
-      geom_histogram(stat = "count") +
-      ggtitle("Activity Steps from Oct. and Nov. 2012")
-```
-
-```
-## Warning: Ignoring unknown parameters: binwidth, bins, pad
+ggplot(totalStepByDate, aes(x=totalSteps)) + 
+      geom_histogram(binwidth = 1000) +
+      ggtitle("Total Activity Steps per day from Oct. and Nov. 2012")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
-## What is mean total number of steps taken per day?
+## 2. Calculate and report the **mean** and **median** total number of steps taken per day
 
 ```r
-MeanStepByDate <- aggregate(ccActivity$steps, list(date=ccActivity$date), mean)
-names(MeanStepByDate) [2] <- c("AvgSteps")
-mean(MeanStepByDate$AvgSteps)
+(MeanStepByDate <- mean(totalStepByDate$totalSteps))
 ```
 
 ```
-## [1] 37.3826
+## [1] 10766.19
+```
+
+```r
+(MedianStepByDate <- median(totalStepByDate$totalSteps))
+```
+
+```
+## [1] 10765
 ```
 
 ## What is the average daily activity pattern?
@@ -116,9 +103,7 @@ mean(MeanStepByDate$AvgSteps)
 across all days (y-axis)
 
 ```r
-ccActivityInterval <- activity[(complete.cases(activity)), c(1,3)]  # exclude 2nd column 'date' and NAs
-
-avgDaily5MinInterval <- aggregate(ccActivityInterval$steps, list(interval=ccActivityInterval$interval), mean)
+avgDaily5MinInterval <- aggregate(ccActivity$steps, list(interval=ccActivity$interval), mean)
 names(avgDaily5MinInterval)[2] <- "intervalAvgSteps"   # rename column "x" to 
 
 plot(avgDaily5MinInterval$intervalAvgSteps ~ avgDaily5MinInterval$interval, type="l", main ="Average # of Steps/ 5-minute interval Oct. to Nov. 2012", xlab = "Interval", ylab = "Avg # of Steps")
@@ -178,15 +163,9 @@ activityImputed <- dplyr::mutate(activityImputed, imputedSteps = ifelse(is.na(st
 totalStepByDate <- aggregate(activityImputed$imputedSteps, list(date=activityImputed$date), sum)
 names(totalStepByDate)[2] <- "totalSteps"   # rename column "x" to 
 
-activityImputedDtRep <- as.data.frame(rep(totalStepByDate$date,totalStepByDate$totalSteps))
-names(activityImputedDtRep) <- c("date")
 
-ggplot(activityImputedDtRep, aes(x=date)) + geom_histogram(stat = "count") +
-      labs(title="Imputed Value Total # of Steps, Oct.-Nov. 2012")
-```
-
-```
-## Warning: Ignoring unknown parameters: binwidth, bins, pad
+ggplot(totalStepByDate, aes(x=totalSteps)) + geom_histogram(binwidth = 1000) +
+      labs(title="Imputed Value Total # of Steps per day, Oct.-Nov. 2012")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
@@ -198,7 +177,8 @@ Do these values differ from the estimates from the first part of the assignment?
 MeanImputedStepByDate <- aggregate(activityImputed$imputedSteps, list(date=activityImputed$date), mean)
 names(MeanImputedStepByDate)[2] <- "AvgSteps"   # rename column "x" to 
 
-MedianImputedStepByDate <- aggregate(activityImputed$imputedSteps, list(date=activityImputed$date), median)
+MeanStepByDate <- aggregate(ccActivity$steps, list(date=ccActivity$date), mean)
+names(MeanStepByDate)[2] <- "AvgSteps"   # rename column "x" to 
 
 MeanImputedStepByDate$source <- c("Imputed Value")
 #MeanImputedStepByDate
@@ -219,6 +199,8 @@ ggplot(MeanStepsCompare, aes(x=date, y=AvgSteps)) +
 
 ![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
+
+The result is not much difference except for the first and last date where there were no data. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
